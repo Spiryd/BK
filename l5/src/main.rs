@@ -1,5 +1,57 @@
+use rand::prelude::*;
+use rand_pcg::Pcg64;
+
 fn main() {
-    
+    let bank_numbers = gen_bank_numbers(10);
+    println!("{:#?}", bank_numbers);
+}
+
+fn gen_bank_numbers(q: usize) -> Vec<String> {
+    let mut bank_numbers: Vec<String> = Vec::new();
+    let numery_rozliczeniowe: [[u8; 8]; 5] = [
+        [1, 0, 1, 0, 0, 0, 0, 0], // NBP
+        [1, 1, 6, 0, 0, 0, 0, 6], // Millenium 
+        [1, 0, 5, 0, 0, 0, 0, 2], // ING
+        [2, 1, 2, 0, 0, 0, 0, 1], // Santander
+        [1, 0, 2, 0, 0, 0, 0, 3], // PKO BP
+    ]; 
+    let mut rng = Pcg64::seed_from_u64(2137);
+    for nr  in numery_rozliczeniowe {
+        for _ in 0..q {
+            let mut bank_number = String::new();
+            let mut client_number = [0u8; 16];
+            for i in 0..16 {
+                client_number[i] = rng.gen_range(0..10);
+            }
+            let mut tmp: u128 = 212500;
+            for i in 0..8 {
+                tmp += nr[i] as u128 * 10u128.pow((7 - i + 21) as u32);
+            }
+            for i in 0..16 {
+                tmp += client_number[i] as u128 * 10u128.pow((15 - i + 5) as u32);
+            }
+            tmp = tmp % 97;
+            tmp = 98 - tmp;
+            bank_number.push_str(format!("{:02}", tmp).as_str());
+            for i in 0..8 {
+                bank_number.push_str(nr[i].to_string().as_str());
+            }
+            for i in 0..16 {
+                bank_number.push_str(client_number[i].to_string().as_str());
+            }
+            bank_numbers.push(bank_number);
+        }
+    }
+    bank_numbers
+}
+
+pub fn calculte_nr_control_number(nr: [u8; 7]) -> u8 {
+    let weights = [3, 9, 7, 1, 3, 9, 7];
+    let mut sum = 0;
+    for i in 0..7 {
+        sum += nr[i] as u16 * weights[i] as u16;
+    }
+    (10 - (sum % 10) as u8) % 10
 }
 
 pub fn rc4(key: &[u8], data: &[u8]) -> Vec<u8> {
@@ -40,7 +92,7 @@ pub fn uses_same_key(ciphertext0: &[u8], ciphertext1: &[u8] ) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rand::prelude::*;
+
     #[test]
     fn test_decipher() {
         let key0 = b"Very Good Key";
