@@ -1,9 +1,20 @@
 use rand::prelude::*;
 use rand_pcg::Pcg64;
+use itertools::Itertools;
 
 fn main() {
     let bank_numbers = gen_bank_numbers(10);
-    println!("{:#?}", bank_numbers);
+    let key = b"Very Good Key";
+    let mut cryptograms = Vec::new();
+    for bank_number in &bank_numbers {
+        let cryptogram = rc4(key, bank_number.as_bytes());
+        cryptograms.push(cryptogram);
+    }
+    for (c0, c1) in cryptograms.iter().tuple_combinations() {
+        let xored: Vec<u8> = c0.iter().zip(c1.iter()).map(|(i0, i1)| i0 ^ i1).collect();
+        println!("{:?}", xored[2..10].to_vec()); 
+
+    }
 }
 
 fn gen_bank_numbers(q: usize) -> Vec<String> {
