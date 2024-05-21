@@ -48,8 +48,9 @@ def generate_keypair(p, q):
     d = multiplicative_inverse(e, phi)
     return ((n, e), (n, d))
 
-p = 13
-q = 17
+p = 4858654271
+q = 7678045183
+
 publicA, privateA = generate_keypair(p, q)
 publicB, privateB = generate_keypair(p, q)
 
@@ -59,3 +60,4 @@ print("PublicB: ", publicB)
 
 d_B = multiplicative_inverse(publicB[1], (p-1)*(q-1))
 print("PrivateB: ", (publicB[0], d_B))
+print("PrivateB: ", privateB)
